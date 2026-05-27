@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEMORISTIN - Kenangan Senja Melayang</title>
+  <meta name="description" content="Sebuah website kenang-kenangan modern berestetika glassmorphism canggih dengan latar belakang fluid dinamis dan balon rindu interaktif.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- POLAROID FRAMES CONTAINER (SPAWNED DYNAMICALLY) -->
+  <div id="polaroids-container"></div>
+
+  <!-- FLOATING MINI AUDIO PLAYER (TOP LEFT) -->
+  <div class="floating-player-card" id="floating-player">
+    <div class="floating-player-info">
+      <span class="floating-player-icon">🎵</span>
+      <div class="floating-player-text">
+        <span class="floating-player-title">EVERYTHING</span>
+        <span class="floating-player-status" id="floating-player-status">Memutar...</span>
+      </div>
+    </div>
+    <button class="btn-floating-play" id="btn-floating-play">Jeda</button>
+  </div>
+
+  <!-- DYNAMIC FLUID BACKGROUND BLOBS -->
+  <div class="fluid-bg">
+    <div class="blob blob-orange"></div>
+    <div class="blob blob-yellow"></div>
+    <div class="blob blob-blue"></div>
+    <div class="blob blob-maroon"></div>
+    <div class="blob blob-light"></div>
+    <div class="blob blob-black"></div>
+  </div>
+  
+  <!-- GLASS BACKDROP OVERLAY -->
+  <div class="glass-backdrop"></div>
+
+  <!-- 1. HERO SECTION -->
+  <header class="hero-section">
+    <div class="hero-cover-container">
+      <div class="hero-cover-placeholder">
+        <span class="hero-placeholder-icon">🌅</span>
+        <div class="hero-memory-letter">
+          <p class="hero-letter-body">
+            Hai Ristin, selamat atas kelulusanmu, sangat cepat waktu telah berlalu hingga tak terasa yang dulunya kita membungkus kado lomba 17 agustus bersama saat panas terik, sekarang akan berpisah (udah berpisah soalnya udah pulang ke rumah), yang dulunya kita selalu di dalam posko tidur, bermain uno, nobar tiap malam, kecelakaan hahaha, bermain di pantai bersama anak-anak KKN lainnya, sarapan tiap pagi, makan malam bersama, bangun setiap pagi ketika sudah jadwal kita untuk membeli makanan ke pasar, berkumpul ke kantor desa, merayakan ultah sekdes, menjadi mc ANHI, senam bersama warga, membersihkan selokan, memasang palang pembatas antar dusun, membangun tugu pembatas desa pada dusun 6, menitipkan loundry ketika aku hendak ke indomaret karena searah hahaha, membeli autan karena sangat banyak nyamuk, antri mandi (kalau kau mandi tengah malam supaya bersih saat mau tidur hahahahahahaha), putar musik sekeras mungkin hingga kena tegur tetangga hahahaha, hp fajar hilang, diajak syuting oleh pemuda desa, acara 17 agustus kita yang terlaksanakan dengan meriah, hingga perpisahan kita yang diisi oleh air mata (ristin nangis) hahahahhaha, banyak yang telah kita lalui bersama saat KKN, semua kisah itu sangat berharga bagiku dan membuatku kagum padamu, karena ternyata ada orang yang se asik itu, lu keren banget men, lu asik banget men dan momen yang paling tidak bisa ku lupakan adalah malam ketika sebelum rapat malam, kau bilang kau juga suka baca komik, membuatku sangat excited karena ada orang lain selain fajar yang suka baca komik web, dan akhirnya kita berbagi cerita tentang komik fav masing-masing hingga yuli datang nimbrung dan ngatain kita wibu 🗿 hahahaha, lucu rasanya ketika mengingat masa-masa itu, kangen, rindu, pengen balik lagi ke masa dimana kita hanyalah mahasiswa random yang berkumpul karena KKN dan sekarang berakhir menjadi the last moment we ever share and hear each other of our story, tidak ada dan tidak akan pernah ada cara untuk memutar balik setir ini, mau bagaimanapun kita harus tetap melangkah maju untuk masa depan kita, TERIMA KASIH RISTIN TELAH DATANG KE HIDUPKU MENJADI SEBUAH CERITA YANG "LU ORANGNYA ASIK BANGET MEN GILAKK".
+          </p>
+          <p class="hero-letter-signature">
+            - I WISH I COULD TURN BACK TIME AND MEET YOU AT THE RIGHT TIME.
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <h1 class="hero-title">MEMORISTIN</h1>
+    <p class="hero-subtitle">kenangan yang ristin buat!</p>
+    
+    <button class="btn-start" id="btn-start">Mulai Perjalanan</button>
+  </header>
+
+  <!-- 2. MAIN CONTAINER -->
+  <main class="main-container" id="main-content">
+
+    <!-- PHOTO VIEWER SECTION (GALERISTIN - DYNAMIC GALLERY) -->
+    <section class="slider-section">
+      <h2 class="section-title">GALERISTIN</h2>
+      
+      <div class="photo-viewer-container glass-card">
+        
+        <!-- Large Photo Display Area -->
+        <div class="large-photo-display">
+          <button class="nav-photo-btn prev-btn" id="btn-photo-prev">‹</button>
+          
+          <div class="large-photo-frame" id="large-photo-frame">
+            <img id="large-photo-img" class="large-photo-img" src="" alt="Kenangan Ristin">
+          </div>
+          
+          <button class="nav-photo-btn next-btn" id="btn-photo-next">›</button>
+        </div>
+
+        <!-- Thumbnail Row (scrollable) -->
+        <div class="photo-thumbnails-row" id="photo-thumbnails-row">
+          <!-- Thumbnails akan dimuat dinamis oleh JS -->
+        </div>
+
+      </div>
+    </section>
+
+    <!-- MODERN AUDIO PLAYER BAR WITH INTEGRATED LYRICS -->
+    <section class="audio-section">
+      <div class="modern-audio-player glass-card">
+        
+        <!-- Left: Audio info and controls -->
+        <div class="audio-player-left">
+          <!-- Neon disc player -->
+          <div class="music-disk-neon" id="music-disk">
+            <div class="music-disk-center"></div>
+          </div>
+
+          <div class="audio-info">
+            <h3 class="audio-track-title" id="audio-title">Terbuang Dalam Waktu</h3>
+            <p class="audio-track-artist" id="audio-sub">Barasuara</p>
+            
+            <div class="audio-controls-row">
+              <button class="btn-modern-play" id="btn-prev" style="padding: 10px 15px; min-width: 45px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);">⏮</button>
+              <button class="btn-modern-play" id="btn-play-pause">Putar Musik</button>
+              <button class="btn-modern-play" id="btn-next" style="padding: 10px 15px; min-width: 45px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);">⏭</button>
+            </div>
+            
+            <div class="volume-row" style="margin-top: 15px; justify-content: center;">
+              <span>Volume:</span>
+              <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.05" value="0.5">
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Interactive Lyrics Scroll Panel -->
+        <div class="audio-player-right">
+          <div class="lyrics-header">LIRIK MEMORISTIN (Klik baris lirik untuk melompat):</div>
+          <div class="lyrics-scroll-panel" id="lyrics-scroll-panel">
+            <!-- Baris lirik akan dimuat dinamis oleh JS berdasarkan lagu aktif -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- CINEMA GRID VIDEO HUB (MULTIPLE VIDEO STREAM) -->
+    <section class="video-section">
+      <h2 class="section-title">TETATERISTIN</h2>
+      
+      <div class="video-theater-wrapper glass-card">
+        
+        <!-- Layar Utama Video -->
+        <div class="main-theater">
+          <!-- Frame pemutar video. Ganti tautan embed di bawah dengan ID Google Drive Anda -->
+          <iframe id="main-video-player" src="https://drive.google.com/file/d/1oCddv87WVF4F2VM1UVeH7g48L1g7Q5VG/preview" allowfullscreen></iframe>
+        </div>
+
+        <!-- Daftar Thumbnail Playlist -->
+        <div class="video-playlist-container">
+          <span class="playlist-header">YOUR MEMORI :</span>
+          
+          <div class="playlist-scroll">
+            
+            <!-- Video 1 -->
+            <div class="video-thumb-card active-thumb" data-video-url="https://drive.google.com/file/d/1oCddv87WVF4F2VM1UVeH7g48L1g7Q5VG/preview">
+              <div class="thumb-placeholder grad-1">🎬 1</div>
+              <img src="https://drive.google.com/thumbnail?id=1oCddv87WVF4F2VM1UVeH7g48L1g7Q5VG&sz=w300" class="video-thumb-img" alt="Kenangan Ristin 1" onerror="this.style.display='none';">
+              <div class="thumb-title-bar">Kenangan Ristin 1</div>
+            </div>
+
+            <!-- Video 2 -->
+            <div class="video-thumb-card" data-video-url="https://drive.google.com/file/d/1kLq1szSZE0egMCywu2wH5nP23JWL266a/preview">
+              <div class="thumb-placeholder grad-2">🎬 2</div>
+              <img src="https://drive.google.com/thumbnail?id=1kLq1szSZE0egMCywu2wH5nP23JWL266a&sz=w300" class="video-thumb-img" alt="Kenangan Ristin 2" onerror="this.style.display='none';">
+              <div class="thumb-title-bar">Kenangan Ristin 2</div>
+            </div>
+
+            <!-- Video 3 -->
+            <div class="video-thumb-card" data-video-url="https://drive.google.com/file/d/1p9bFoqIGFqXqhx_4sij1Yr2rYSidkDfZ/preview">
+              <div class="thumb-placeholder grad-3">🎬 3</div>
+              <img src="https://drive.google.com/thumbnail?id=1p9bFoqIGFqXqhx_4sij1Yr2rYSidkDfZ&sz=w300" class="video-thumb-img" alt="Kenangan Ristin 3" onerror="this.style.display='none';">
+              <div class="thumb-title-bar">Kenangan Ristin 3</div>
+            </div>
+
+            <!-- Video 4 -->
+            <div class="video-thumb-card" data-video-url="https://drive.google.com/file/d/1RyvR6Y2p9msSoiQ-KzV54o73XyqBVb92/preview">
+              <div class="thumb-placeholder grad-4">🎬 4</div>
+              <img src="https://drive.google.com/thumbnail?id=1RyvR6Y2p9msSoiQ-KzV54o73XyqBVb92&sz=w300" class="video-thumb-img" alt="Kenangan Ristin 4" onerror="this.style.display='none';">
+              <div class="thumb-title-bar">Kenangan Ristin 4</div>
+            </div>
+
+            <!-- Video 5 -->
+            <div class="video-thumb-card" data-video-url="https://drive.google.com/file/d/1ic9pvREwIK7Xu_xc6U5cT3YSFfry4oJz/preview">
+              <div class="thumb-placeholder grad-5">🎬 5</div>
+              <img src="https://drive.google.com/thumbnail?id=1ic9pvREwIK7Xu_xc6U5cT3YSFfry4oJz&sz=w300" class="video-thumb-img" alt="Kenangan Ristin 5" onerror="this.style.display='none';">
+              <div class="thumb-title-bar">Kenangan Ristin 5</div>
+            </div>
+
+            <!-- Video 6 -->
+            <div class="video-thumb-card" data-video-url="https://drive.google.com/file/d/1iz2ry2miC3wuomX9GaNc91j95XsRbhMD/preview">
+              <div class="thumb-placeholder grad-1">🎬 6</div>
+              <img src="https://drive.google.com/thumbnail?id=1iz2ry2miC3wuomX9GaNc91j95XsRbhMD&sz=w300" class="video-thumb-img" alt="Kenangan Ristin 6" onerror="this.style.display='none';">
+              <div class="thumb-title-bar">Kenangan Ristin 6</div>
+            </div>
+
+            <!-- Video 7 -->
+            <div class="video-thumb-card" data-video-url="https://drive.google.com/file/d/1Fqv3Cde-CJTY0iM37espM9ZK7ww-KNg3/preview">
+              <div class="thumb-placeholder grad-2">🎬 7</div>
+              <img src="https://drive.google.com/thumbnail?id=1Fqv3Cde-CJTY0iM37espM9ZK7ww-KNg3&sz=w300" class="video-thumb-img" alt="Kenangan Ristin 7" onerror="this.style.display='none';">
+              <div class="thumb-title-bar">Kenangan Ristin 7</div>
+            </div>
+
+            <!-- Video 8 -->
+            <div class="video-thumb-card" data-video-url="https://drive.google.com/file/d/1kfwIEjO-ZNj0QkbPjp50hsR98Sjnw1TN/preview">
+              <div class="thumb-placeholder grad-3">🎬 8</div>
+              <img src="https://drive.google.com/thumbnail?id=1kfwIEjO-ZNj0QkbPjp50hsR98Sjnw1TN&sz=w300" class="video-thumb-img" alt="Kenangan Ristin 8" onerror="this.style.display='none';">
+              <div class="thumb-title-bar">Kenangan Ristin 8</div>
+            </div>
+
+            <!-- Video 9 -->
+            <div class="video-thumb-card" data-video-url="https://drive.google.com/file/d/1HX-LVU6F5QXWBxYGg7EsWCl3e9hseCkc/preview">
+              <div class="thumb-placeholder grad-4">🎬 9</div>
+              <img src="https://drive.google.com/thumbnail?id=1HX-LVU6F5QXWBxYGg7EsWCl3e9hseCkc&sz=w300" class="video-thumb-img" alt="Kenangan Ristin 9" onerror="this.style.display='none';">
+              <div class="thumb-title-bar">Kenangan Ristin 9</div>
+            </div>
+
+            <!-- Video 10 -->
+            <div class="video-thumb-card" data-video-url="https://drive.google.com/file/d/1vL490GiHN2JHRvIv0Wd1eUFAE6x9vLly/preview">
+              <div class="thumb-placeholder grad-5">🎬 10</div>
+              <img src="https://drive.google.com/thumbnail?id=1vL490GiHN2JHRvIv0Wd1eUFAE6x9vLly&sz=w300" class="video-thumb-img" alt="Kenangan Ristin 10" onerror="this.style.display='none';">
+              <div class="thumb-title-bar">Kenangan Ristin 10</div>
+            </div>
+
+            <!-- Video 11 -->
+            <div class="video-thumb-card" data-video-url="https://drive.google.com/file/d/15XGasdbIdSEaw-KD4t2LJXw0Fn3yUs3T/preview">
+              <div class="thumb-placeholder grad-1">🎬 11</div>
+              <img src="https://drive.google.com/thumbnail?id=15XGasdbIdSEaw-KD4t2LJXw0Fn3yUs3T&sz=w300" class="video-thumb-img" alt="Kenangan Ristin 11" onerror="this.style.display='none';">
+              <div class="thumb-title-bar">Kenangan Ristin 11</div>
+            </div>
+
+            <!-- Video 12 -->
+            <div class="video-thumb-card" data-video-url="https://drive.google.com/file/d/147hbtkNzIxXDqb0nB6E43SvR-HH--Tbl/preview">
+              <div class="thumb-placeholder grad-2">🎬 12</div>
+              <img src="https://drive.google.com/thumbnail?id=147hbtkNzIxXDqb0nB6E43SvR-HH--Tbl&sz=w300" class="video-thumb-img" alt="Kenangan Ristin 12" onerror="this.style.display='none';">
+              <div class="thumb-title-bar">Kenangan Ristin 12</div>
+            </div>
+
+            <!-- Video 13 -->
+            <div class="video-thumb-card" data-video-url="https://drive.google.com/file/d/1jIu9oSm6ZbdSTSxYey7TvKHGK5ba0t16/preview">
+              <div class="thumb-placeholder grad-3">🎬 13</div>
+              <img src="https://drive.google.com/thumbnail?id=1jIu9oSm6ZbdSTSxYey7TvKHGK5ba0t16&sz=w300" class="video-thumb-img" alt="Kenangan Ristin 13" onerror="this.style.display='none';">
+              <div class="thumb-title-bar">Kenangan Ristin 13</div>
+            </div>
+
+            <!-- Video 14 -->
+            <div class="video-thumb-card" data-video-url="https://drive.google.com/file/d/1wqkSDqy01bjNWrxN_QBpXw09Y2fm2lGo/preview">
+              <div class="thumb-placeholder grad-4">🎬 14</div>
+              <img src="https://drive.google.com/thumbnail?id=1wqkSDqy01bjNWrxN_QBpXw09Y2fm2lGo&sz=w300" class="video-thumb-img" alt="Kenangan Ristin 14" onerror="this.style.display='none';">
+              <div class="thumb-title-bar">Kenangan Ristin 14</div>
+            </div>
+
+            <!-- Video 15 -->
+            <div class="video-thumb-card" data-video-url="https://drive.google.com/file/d/1vfrup7yTopxcof_pGeT4hlzZ88wl61wl/preview">
+              <div class="thumb-placeholder grad-5">🎬 15</div>
+              <img src="https://drive.google.com/thumbnail?id=1vfrup7yTopxcof_pGeT4hlzZ88wl61wl&sz=w300" class="video-thumb-img" alt="Kenangan Ristin 15" onerror="this.style.display='none';">
+              <div class="thumb-title-bar">Kenangan Ristin 15</div>
+            </div>
+
+            <!-- Video 16 -->
+            <div class="video-thumb-card" data-video-url="https://drive.google.com/file/d/1Y2ansANBWUTsqQdRocBlnQnz_OoHk3Ie/preview">
+              <div class="thumb-placeholder grad-1">🎬 16</div>
+              <img src="https://drive.google.com/thumbnail?id=1Y2ansANBWUTsqQdRocBlnQnz_OoHk3Ie&sz=w300" class="video-thumb-img" alt="Kenangan Ristin 16" onerror="this.style.display='none';">
+              <div class="thumb-title-bar">Kenangan Ristin 16</div>
+            </div>
+
+            <!-- Video 17 -->
+            <div class="video-thumb-card" data-video-url="https://drive.google.com/file/d/1F9Af1Co0Slmu7FNFiamhiUV1jQ4LsKe-/preview">
+              <div class="thumb-placeholder grad-2">🎬 17</div>
+              <img src="https://drive.google.com/thumbnail?id=1F9Af1Co0Slmu7FNFiamhiUV1jQ4LsKe-&sz=w300" class="video-thumb-img" alt="Kenangan Ristin 17" onerror="this.style.display='none';">
+              <div class="thumb-title-bar">Kenangan Ristin 17</div>
+            </div>
+
+            <!-- Video 18 -->
+            <div class="video-thumb-card" data-video-url="https://drive.google.com/file/d/1l7GlMvIeLJoPDtUd39FUfRChwv4p6YPT/preview">
+              <div class="thumb-placeholder grad-3">🎬 18</div>
+              <img src="https://drive.google.com/thumbnail?id=1l7GlMvIeLJoPDtUd39FUfRChwv4p6YPT&sz=w300" class="video-thumb-img" alt="Kenangan Ristin 18" onerror="this.style.display='none';">
+              <div class="thumb-title-bar">Kenangan Ristin 18</div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="modern-footer">
+    <p>Dibuat untuk melestarikan memori berharga RISTIN</p>
+    <p>© 2026 MEMORISTIN.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

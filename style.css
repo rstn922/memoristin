@@ -1082,6 +1082,8 @@ body {
 /* === CATY VIRTUAL PET === */
 #caty-pet {
   position: fixed;
+  top: 0;
+  left: 0;
   width: 64px;
   height: 64px;
   z-index: 99999;
@@ -1094,4 +1096,37 @@ body {
 
 #caty-pet:active {
   cursor: grabbing;
+}
+
+/* Floating Cat Toggle Button */
+.btn-caty-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #fff;
+  font-size: 1.6rem;
+  cursor: pointer;
+  z-index: 99998;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-caty-toggle:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.1);
+  box-shadow: 0 12px 40px rgba(255, 168, 52, 0.3);
+}
+
+.btn-caty-toggle:active {
+  transform: scale(0.9);
 }

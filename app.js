@@ -1568,13 +1568,29 @@ document.addEventListener('DOMContentLoaded', () => {
     if (catyInstance) {
       catyInstance.destroy();
       catyInstance = null;
+      // Ubah emoji tombol ke kucing tidur saat disembunyikan
+      const btn = document.getElementById('btn-caty-toggle');
+      if (btn) btn.textContent = '🐱';
     } else {
       catyInstance = new CatyPet();
+      // Ubah emoji tombol ke cakar saat aktif
+      const btn = document.getElementById('btn-caty-toggle');
+      if (btn) btn.textContent = '🐾';
     }
   }
 
   // Inisialisasi Caty secara otomatis saat halaman dimuat
   catyInstance = new CatyPet();
+  const initialBtn = document.getElementById('btn-caty-toggle');
+  if (initialBtn) initialBtn.textContent = '🐾';
+
+  // Klik tombol toggle di pojok kanan bawah
+  const catyToggleBtn = document.getElementById('btn-caty-toggle');
+  if (catyToggleBtn) {
+    catyToggleBtn.addEventListener('click', () => {
+      toggleCaty();
+    });
+  }
 
   // Keyboard shortcut toggle "CATY"
   let typedKeys = '';

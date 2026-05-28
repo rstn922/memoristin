@@ -483,10 +483,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   // === 2. DYNAMIC PHOTO GALLERY (GALERISTIN) ===
-  // Daftar semua 38 foto
-  const allPhotos = [];
+  // Daftar semua foto lama (1-38)
+  const oldPhotos = [];
   for (let i = 1; i <= 38; i++) {
-    allPhotos.push(`assets/photos/memori-${String(i).padStart(2, '0')}.jpg`);
+    oldPhotos.push(`assets/photos/memori-${String(i).padStart(2, '0')}.jpg`);
+  }
+
+  // Daftar foto baru (39-56)
+  const newPhotos = [];
+  for (let i = 39; i <= 56; i++) {
+    newPhotos.push(`assets/photos/memori-${String(i).padStart(2, '0')}.jpg`);
   }
 
   // Shuffle acak (Fisher-Yates)
@@ -501,11 +507,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const target1 = 'assets/photos/memori-11.jpg';
   const target2 = 'assets/photos/memori-12.jpg';
-  const remainingPhotos = allPhotos.filter(p => p !== target1 && p !== target2);
-  const shuffledRemaining = shuffle(remainingPhotos);
+  
+  // Filter target1 dan target2 dari foto lama
+  const remainingOld = oldPhotos.filter(p => p !== target1 && p !== target2);
+  const shuffledOld = shuffle(remainingOld);
 
-  const galleryPhotos = [target1, target2, ...shuffledRemaining.slice(0, 20)];  // 22 foto untuk galeri (dimulai dengan target1 & target2)
-  const polaroidPhotos = shuffledRemaining.slice(20);                           // 16 foto untuk polaroid
+  // Ambil 16 foto lama secara acak untuk polaroid
+  const polaroidPhotos = shuffledOld.slice(0, 16);
+
+  // Sisa 20 foto lama digabungkan dengan 18 foto baru untuk galeri
+  const galleryPool = [...shuffledOld.slice(16), ...newPhotos];
+  const shuffledGalleryPool = shuffle(galleryPool);
+
+  // Susunan akhir galeri: target1 & target2 di depan, diikuti pool acak (total 40 foto)
+  const galleryPhotos = [target1, target2, ...shuffledGalleryPool];
 
   // Render gallery
   const largePhotoImg = document.getElementById('large-photo-img');

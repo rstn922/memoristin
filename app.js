@@ -604,8 +604,15 @@ document.addEventListener('DOMContentLoaded', () => {
     thumbCards.forEach(c => c.classList.remove('active-thumb'));
     if (thumbCards[index]) {
       thumbCards[index].classList.add('active-thumb');
-      // Scroll thumbnail ke posisi aktif
-      thumbCards[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      // Scroll horizontal container thumbnail saja tanpa menarik scrollbar utama halaman
+      const card = thumbCards[index];
+      const containerWidth = thumbnailsRow.clientWidth;
+      const cardLeft = card.offsetLeft - thumbnailsRow.offsetLeft;
+      const cardWidth = card.clientWidth;
+      thumbnailsRow.scrollTo({
+        left: cardLeft - (containerWidth / 2) + (cardWidth / 2),
+        behavior: 'smooth'
+      });
     }
 
     // Double Image Crossfade

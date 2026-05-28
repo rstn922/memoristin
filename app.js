@@ -837,7 +837,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // === FIREWORKS ENGINE ===
   let fireworksActive = false;
   let fireworksAnimationId = null;
-  let launchInterval = null;
+  let launchTextInterval = null;
+  let launchNormalInterval = null;
   let canvas = null;
   let ctx = null;
   let particles = [];
@@ -958,6 +959,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function explodeRocket(ex, ey, word) {
+    if (!word) {
+      // Ledakan dekoratif kembang api biasa (sangat meriah & acak)
+      const colors = ['#ff5e36', '#00d2ff', '#ffa834', '#ffff80', '#ff3366', '#ffffff', '#a8ff34', '#ff34e8'];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      for (let i = 0; i < 70; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = Math.random() * 5 + 1.5;
+        const p = new Particle(ex, ey, ex + Math.cos(angle) * velocity * 30, ey + Math.sin(angle) * velocity * 30, color);
+        p.lifeStage = 'fade'; // langsung memudar turun
+        particles.push(p);
+      }
+      return;
+    }
+
+    // Ledakan teks kata-kata
     const offscreenCanvas = document.createElement('canvas');
     const offscreenCtx = offscreenCanvas.getContext('2d');
     
@@ -1045,21 +1061,40 @@ document.addEventListener('DOMContentLoaded', () => {
   function startLaunchingRockets() {
     currentWordIndex = 0;
     
-    const launch = () => {
+    // Luncurkan kembang api teks (lebih acak posisinya)
+    const launchText = () => {
       if (!fireworksActive) return;
       const word = fireworksWords[currentWordIndex];
       currentWordIndex = (currentWordIndex + 1) % fireworksWords.length;
       
-      const startX = canvas.width / 2 + (Math.random() * 120 - 60);
+      const startX = canvas.width / 2 + (Math.random() * 160 - 80);
       const startY = canvas.height + 20;
-      const targetX = canvas.width / 2;
-      const targetY = canvas.height * 0.4 + (Math.random() * 80 - 40);
+      const targetX = canvas.width * 0.22 + Math.random() * (canvas.width * 0.56);
+      const targetY = canvas.height * 0.25 + Math.random() * (canvas.height * 0.22);
       
       rockets.push(new Rocket(startX, startY, targetX, targetY, word));
     };
 
-    launch();
-    launchInterval = setInterval(launch, 3300);
+    // Luncurkan kembang api biasa yang ramai & acak
+    const launchNormal = () => {
+      if (!fireworksActive) return;
+      const startX = Math.random() * canvas.width;
+      const startY = canvas.height + 20;
+      const targetX = canvas.width * 0.12 + Math.random() * (canvas.width * 0.76);
+      const targetY = canvas.height * 0.15 + Math.random() * (canvas.height * 0.45);
+      
+      rockets.push(new Rocket(startX, startY, targetX, targetY, null));
+    };
+
+    // Pemicu awal
+    launchText();
+    setTimeout(launchNormal, 200);
+    setTimeout(launchNormal, 600);
+    setTimeout(launchNormal, 1000);
+
+    // Set interval berkala (Teks tiap 2.8s, Biasa tiap 0.7s agar ramai)
+    launchTextInterval = setInterval(launchText, 2800);
+    launchNormalInterval = setInterval(launchNormal, 700);
   }
 
   function triggerSecretFireworks() {
@@ -1112,9 +1147,13 @@ document.addEventListener('DOMContentLoaded', () => {
       cancelAnimationFrame(fireworksAnimationId);
       fireworksAnimationId = null;
     }
-    if (launchInterval) {
-      clearInterval(launchInterval);
-      launchInterval = null;
+    if (launchTextInterval) {
+      clearInterval(launchTextInterval);
+      launchTextInterval = null;
+    }
+    if (launchNormalInterval) {
+      clearInterval(launchNormalInterval);
+      launchNormalInterval = null;
     }
     
     window.removeEventListener('resize', resizeFireworksCanvas);
@@ -1132,8 +1171,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 1000);
     }
     
-    // Matikan musik melayang
-    pauseFloatingMusic();
+    // Kembang api selesai, lagu melayang TIDAK dimatikan agar tetap berjalan indah
     
     // Reset polaroid teraktivasi
     activatedPolaroids.forEach(frame => {

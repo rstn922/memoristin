@@ -1078,3 +1078,20 @@ body {
   0% { transform: scale(0); }
   100% { transform: scale(1); }
 }
+
+/* === CATY VIRTUAL PET === */
+#caty-pet {
+  position: fixed;
+  width: 64px;
+  height: 64px;
+  z-index: 99999;
+  pointer-events: auto;
+  cursor: grab;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  transition: transform 0.1s linear;
+}
+
+#caty-pet:active {
+  cursor: grabbing;
+}

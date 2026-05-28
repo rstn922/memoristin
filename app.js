@@ -1194,4 +1194,406 @@ document.addEventListener('DOMContentLoaded', () => {
       togglePlay();
     }
   });
+
+  // === 6. CATY VIRTUAL PET EASTER EGG COMPANION ===
+  const catColors = [
+    'transparent', // 0
+    '#ffa834',     // 1: Yellow (ginger)
+    '#ffffff',     // 2: White
+    '#4a2f0f',     // 3: Dark outline
+    '#ff99b3',     // 4: Pink
+    '#000000'      // 5: Black
+  ];
+
+  const catSprites = {
+    sit: [
+      "0000000000000000",
+      "0003300033000000",
+      "0031130311300000",
+      "0314113114130000",
+      "0311111111130000",
+      "0315111115130000",
+      "0311114111130000",
+      "0031111111300000",
+      "0003111113033300",
+      "0032111112311130",
+      "0322111112231130",
+      "0322222222231130",
+      "0322222222231130",
+      "0032233223311300",
+      "0003300330033000",
+      "0000000000000000"
+    ],
+    walk1: [
+      "0000000000000000",
+      "0000330003300000",
+      "0003113031130000",
+      "0031411311413000",
+      "0031111111113000",
+      "0031511111513000",
+      "0003111411130000",
+      "0000311111300000",
+      "0003211111230330",
+      "0032211111223130",
+      "0322222222222330",
+      "0322222222222300",
+      "0032332232332300",
+      "0033033033033000",
+      "0000000000000000",
+      "0000000000000000"
+    ],
+    walk2: [
+      "0000000000000000",
+      "0000330003300000",
+      "0003113031130000",
+      "0031411311413000",
+      "0031111111113000",
+      "0031511111513000",
+      "0003111411130000",
+      "0000311111300000",
+      "0003211111230330",
+      "0032211111223130",
+      "0322222222222330",
+      "0322222222222300",
+      "0033322323322300",
+      "0000330330033000",
+      "0000000000000000",
+      "0000000000000000"
+    ],
+    sleep: [
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000033000330000",
+      "0000311303113000",
+      "0003141131141300",
+      "0031111111111300",
+      "0031511111511300",
+      "0031111411111300",
+      "0003111111113000",
+      "0032111111123000",
+      "0322222222222300",
+      "0322222222222300",
+      "0033223322333000",
+      "0000330033000000",
+      "0000000000000000"
+    ],
+    jump: [
+      "0000000000000000",
+      "0000033000330000",
+      "0000311303113000",
+      "0003141131141300",
+      "0031111111111300",
+      "0031511111511300",
+      "0031111411111300",
+      "0003111111113000",
+      "0000321111230000",
+      "0003221111223000",
+      "0032222222222300",
+      "0322233223322300",
+      "0323303303303330",
+      "0030000000000300",
+      "0000000000000000",
+      "0000000000000000"
+    ]
+  };
+
+  function drawSprite(canvas, spriteName, flipX) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const sprite = catSprites[spriteName];
+    if (!sprite) return;
+    
+    const size = 16;
+    const pixelWidth = canvas.width / size;
+    const pixelHeight = canvas.height / size;
+    
+    for (let y = 0; y < size; y++) {
+      const row = sprite[y];
+      for (let x = 0; x < size; x++) {
+        const char = row[x];
+        const colorIdx = parseInt(char);
+        if (colorIdx === 0) continue;
+        
+        ctx.fillStyle = catColors[colorIdx];
+        
+        const drawX = flipX ? (size - 1 - x) : x;
+        ctx.fillRect(drawX * pixelWidth, y * pixelHeight, pixelWidth, pixelHeight);
+      }
+    }
+  }
+
+  class CatyPet {
+    constructor() {
+      this.el = document.createElement('canvas');
+      this.el.id = 'caty-pet';
+      this.el.width = 16;
+      this.el.height = 16;
+      
+      document.body.appendChild(this.el);
+      
+      this.x = Math.random() * (window.innerWidth - 64);
+      this.y = window.innerHeight - 64 - 20;
+      this.targetX = this.x;
+      this.targetY = this.y;
+      
+      this.state = 'idle';
+      this.flipX = false;
+      this.walkFrame = 0;
+      this.timer = 0;
+      this.sleepTimer = 0;
+      this.isDragging = false;
+      this.activeCard = null;
+      
+      this.initEvents();
+      this.updatePosition();
+      this.changeState('idle');
+      
+      this.loop = setInterval(() => this.tick(), 100);
+      
+      this.onScroll = () => {
+        if (this.activeCard && (this.state === 'idle' || this.state === 'sleep')) {
+          const rect = this.activeCard.getBoundingClientRect();
+          this.y = rect.top - 64;
+          
+          if (this.y < -100 || this.y > window.innerHeight) {
+            this.activeCard = null;
+            this.fallToGround();
+          }
+          this.updatePosition();
+        }
+      };
+      window.addEventListener('scroll', this.onScroll);
+    }
+
+    initEvents() {
+      let startX, startY;
+      
+      const onDragStart = (e) => {
+        this.isDragging = true;
+        this.activeCard = null;
+        this.changeState('idle');
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        startX = clientX - this.x;
+        startY = clientY - this.y;
+        this.el.style.cursor = 'grabbing';
+      };
+
+      const onDragMove = (e) => {
+        if (!this.isDragging) return;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        this.x = clientX - startX;
+        this.y = clientY - startY;
+        this.targetX = this.x;
+        this.targetY = this.y;
+        this.updatePosition();
+      };
+
+      const onDragEnd = () => {
+        if (!this.isDragging) return;
+        this.isDragging = false;
+        this.el.style.cursor = 'grab';
+        this.fallToGround();
+      };
+
+      this.el.addEventListener('mousedown', onDragStart);
+      document.addEventListener('mousemove', onDragMove);
+      document.addEventListener('mouseup', onDragEnd);
+      
+      this.el.addEventListener('touchstart', onDragStart);
+      document.addEventListener('touchmove', onDragMove);
+      document.addEventListener('touchend', onDragEnd);
+    }
+
+    fallToGround() {
+      const groundY = window.innerHeight - 64 - 20;
+      const fallLoop = setInterval(() => {
+        if (this.isDragging) {
+          clearInterval(fallLoop);
+          return;
+        }
+        if (this.y < groundY) {
+          this.y += 10;
+          if (this.y >= groundY) {
+            this.y = groundY;
+            clearInterval(fallLoop);
+            this.changeState('idle');
+          }
+          this.updatePosition();
+        } else {
+          this.y = groundY;
+          clearInterval(fallLoop);
+          this.changeState('idle');
+          this.updatePosition();
+        }
+      }, 30);
+    }
+
+    changeState(state) {
+      if (this.isDragging) return;
+      this.state = state;
+      this.timer = 0;
+      
+      if (state === 'idle') {
+        drawSprite(this.el, 'sit', this.flipX);
+      } else if (state === 'sleep') {
+        drawSprite(this.el, 'sleep', this.flipX);
+        this.sleepTimer = 100 + Math.random() * 120;
+      } else if (state === 'jump') {
+        drawSprite(this.el, 'jump', this.flipX);
+      }
+    }
+
+    tick() {
+      if (this.isDragging) return;
+      
+      this.timer++;
+      
+      if (this.state === 'idle') {
+        if (this.timer > 30) {
+          this.timer = 0;
+          const rand = Math.random();
+          if (rand < 0.4) {
+            this.targetX = Math.random() * (window.innerWidth - 64);
+            this.changeState('walk');
+          } else if (rand < 0.6) {
+            this.changeState('sleep');
+          } else if (rand < 0.75) {
+            this.jumpOnCard();
+          }
+        }
+      } else if (this.state === 'walk') {
+        const dist = this.targetX - this.x;
+        this.flipX = dist < 0;
+        
+        if (Math.abs(dist) < 5) {
+          this.x = this.targetX;
+          this.changeState('idle');
+        } else {
+          this.x += Math.sign(dist) * 3;
+          this.walkFrame = (this.walkFrame + 1) % 2;
+          drawSprite(this.el, this.walkFrame === 0 ? 'walk1' : 'walk2', this.flipX);
+        }
+        this.updatePosition();
+      } else if (this.state === 'sleep') {
+        this.sleepTimer--;
+        if (this.sleepTimer <= 0) {
+          this.changeState('idle');
+        }
+        if (this.timer % 15 === 0) {
+          this.spawnZ();
+        }
+      } else if (this.state === 'jump') {
+        const totalTicks = 15;
+        if (this.timer <= totalTicks) {
+          const t = this.timer / totalTicks;
+          this.x = this.startX + (this.targetX - this.startX) * t;
+          
+          const peakY = Math.min(this.startY, this.targetY) - 120;
+          this.y = this.startY + (this.targetY - this.startY) * t - 4 * peakY * t * (1 - t);
+          
+          this.updatePosition();
+        } else {
+          this.x = this.targetX;
+          this.y = this.targetY;
+          this.updatePosition();
+          this.changeState('idle');
+        }
+      }
+    }
+
+    jumpOnCard() {
+      const cards = document.querySelectorAll('.glass-card');
+      if (cards.length === 0) return;
+      
+      const card = cards[Math.floor(Math.random() * cards.length)];
+      const rect = card.getBoundingClientRect();
+      
+      this.startX = this.x;
+      this.startY = this.y;
+      this.targetX = rect.left + Math.random() * (rect.width - 64);
+      this.targetY = rect.top - 64;
+      
+      if (this.targetX < 0) this.targetX = 10;
+      if (this.targetX > window.innerWidth - 64) this.targetX = window.innerWidth - 74;
+      
+      this.activeCard = card;
+      this.flipX = this.targetX < this.x;
+      this.changeState('jump');
+    }
+
+    spawnZ() {
+      const z = document.createElement('div');
+      z.textContent = 'z';
+      z.style.position = 'fixed';
+      z.style.left = `${this.x + 35}px`;
+      z.style.top = `${this.y + 10}px`;
+      z.style.fontSize = '12px';
+      z.style.color = 'rgba(255, 126, 95, 0.7)';
+      z.style.fontFamily = 'monospace';
+      z.style.zIndex = '99999';
+      z.style.pointerEvents = 'none';
+      z.style.transition = 'all 1.5s ease-out';
+      
+      document.body.appendChild(z);
+      
+      requestAnimationFrame(() => {
+        z.style.transform = 'translateY(-30px) scale(1.5)';
+        z.style.opacity = '0';
+      });
+      
+      setTimeout(() => z.remove(), 1500);
+    }
+
+    updatePosition() {
+      this.el.style.transform = `translate3d(${this.x}px, ${this.y}px, 0)`;
+    }
+
+    destroy() {
+      if (this.loop) {
+        clearInterval(this.loop);
+      }
+      window.removeEventListener('scroll', this.onScroll);
+      if (this.el) {
+        this.el.remove();
+      }
+    }
+  }
+
+  let catyInstance = null;
+
+  function toggleCaty() {
+    if (catyInstance) {
+      catyInstance.destroy();
+      catyInstance = null;
+    } else {
+      catyInstance = new CatyPet();
+    }
+  }
+
+  // Inisialisasi Caty secara otomatis saat halaman dimuat
+  catyInstance = new CatyPet();
+
+  // Keyboard shortcut toggle "CATY"
+  let typedKeys = '';
+  document.addEventListener('keydown', (e) => {
+    typedKeys += e.key.toLowerCase();
+    if (typedKeys.endsWith('caty')) {
+      toggleCaty();
+      typedKeys = '';
+    }
+    if (typedKeys.length > 20) {
+      typedKeys = typedKeys.slice(-10);
+    }
+  });
+
+  // Dobel klik pemutar melayang di pojok kiri atas untuk toggle Caty
+  const floatingPlayer = document.getElementById('floating-player');
+  if (floatingPlayer) {
+    floatingPlayer.addEventListener('dblclick', () => {
+      toggleCaty();
+    });
+  }
 });

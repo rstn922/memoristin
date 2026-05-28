@@ -283,6 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const volumeSlider = document.getElementById('volume-slider');
   const lyricsScrollPanel = document.getElementById('lyrics-scroll-panel');
   let isPlaying = false;
+  let updateSlideshowStatus; // Callback to control gallery slideshow
 
   // === FLOATING BACKGROUND PLAYER (EVERYTHING) ===
   const floatingAudio = new Audio('assets/EVERYTHING.mp3');
@@ -301,11 +302,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (btnFloatingPlay) btnFloatingPlay.textContent = 'Jeda';
       if (floatingPlayerStatus) floatingPlayerStatus.textContent = 'Memutar...';
       isFloatingPlaying = true;
+      if (updateSlideshowStatus) updateSlideshowStatus();
     }).catch(err => {
       console.log("Autoplay lagu melayang dicegah browser.", err);
       if (floatingPlayerStatus) floatingPlayerStatus.textContent = 'Klik untuk Putar';
       if (btnFloatingPlay) btnFloatingPlay.textContent = 'Putar';
       isFloatingPlaying = false;
+      if (updateSlideshowStatus) updateSlideshowStatus();
     });
   }
 
@@ -314,6 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnFloatingPlay) btnFloatingPlay.textContent = 'Putar';
     if (floatingPlayerStatus) floatingPlayerStatus.textContent = 'Dijeda';
     isFloatingPlaying = false;
+    if (updateSlideshowStatus) updateSlideshowStatus();
   }
 
   function toggleFloatingPlay() {
@@ -396,6 +400,7 @@ document.addEventListener('DOMContentLoaded', () => {
       diskNeon.style.animationPlayState = 'running';
       btnPlayPause.textContent = 'Jeda Musik';
       isPlaying = true;
+      if (updateSlideshowStatus) updateSlideshowStatus();
     }).catch(err => {
       console.log("Autoplay dicegah oleh browser.", err);
     });
@@ -406,6 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
     diskNeon.style.animationPlayState = 'paused';
     btnPlayPause.textContent = 'Putar Musik';
     isPlaying = false;
+    if (updateSlideshowStatus) updateSlideshowStatus();
   }
 
   function togglePlay() {
@@ -523,7 +529,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const galleryPhotos = [target1, target2, ...shuffledGalleryPool];
 
   // Render gallery
-  const largePhotoImg = document.getElementById('large-photo-img');
+  let activeImgEl = document.getElementById('large-photo-img-1');
+  let inactiveImgEl = document.getElementById('large-photo-img-2');
   const thumbnailsRow = document.getElementById('photo-thumbnails-row');
   const btnPhotoPrev = document.getElementById('btn-photo-prev');
   const btnPhotoNext = document.getElementById('btn-photo-next');
@@ -536,35 +543,96 @@ document.addEventListener('DOMContentLoaded', () => {
     card.className = 'photo-thumb-card' + (idx === 0 ? ' active-thumb' : '');
     const thumbSrc = src.replace('assets/photos/', 'assets/photos/thumbnails/');
     card.innerHTML = `<img src="${thumbSrc}" alt="Memori ${idx + 1}" loading="lazy">`;
-    card.addEventListener('click', () => showPhoto(idx));
+    card.addEventListener('click', () => {
+      handleUserInteraction();
+      showPhoto(idx);
+    });
     thumbnailsRow.appendChild(card);
   });
 
   // Tampilkan foto pertama
-  largePhotoImg.src = galleryPhotos[0];
+  if (activeImgEl) {
+    activeImgEl.src = galleryPhotos[0];
+  }
+
+  // === SLIDESHOW & TRANSITION CONTROL ===
+  let slideshowInterval = null;
+  let interactionTimeout = null;
+  let isSlideshowPausedByInteraction = false;
+
+  function startSlideshow() {
+    if (slideshowInterval) return; // Already running
+    if (isSlideshowPausedByInteraction) return; // Paused due to recent interaction
+    slideshowInterval = setInterval(() => {
+      const nextIndex = (activePhotoIndex + 1) % galleryPhotos.length;
+      showPhoto(nextIndex);
+    }, 5000);
+  }
+
+  function stopSlideshow() {
+    if (slideshowInterval) {
+      clearInterval(slideshowInterval);
+      slideshowInterval = null;
+    }
+  }
+
+  updateSlideshowStatus = function() {
+    const musicActive = isPlaying || isFloatingPlaying;
+    if (musicActive) {
+      startSlideshow();
+    } else {
+      stopSlideshow();
+    }
+  };
+
+  function handleUserInteraction() {
+    isSlideshowPausedByInteraction = true;
+    stopSlideshow();
+    if (interactionTimeout) {
+      clearTimeout(interactionTimeout);
+    }
+    interactionTimeout = setTimeout(() => {
+      isSlideshowPausedByInteraction = false;
+      updateSlideshowStatus();
+    }, 15000); // 15 seconds
+  }
 
   function showPhoto(index) {
+    if (!activeImgEl || !inactiveImgEl) return;
     activePhotoIndex = index;
     const thumbCards = thumbnailsRow.querySelectorAll('.photo-thumb-card');
     thumbCards.forEach(c => c.classList.remove('active-thumb'));
-    thumbCards[index].classList.add('active-thumb');
+    if (thumbCards[index]) {
+      thumbCards[index].classList.add('active-thumb');
+      // Scroll thumbnail ke posisi aktif
+      thumbCards[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
 
-    // Fade transition
-    largePhotoFrame.style.opacity = '0';
-    setTimeout(() => {
-      largePhotoImg.src = galleryPhotos[index];
-      largePhotoFrame.style.opacity = '1';
-    }, 200);
+    // Double Image Crossfade
+    activeImgEl.onload = null;
+    inactiveImgEl.onload = null;
 
-    // Scroll thumbnail ke posisi aktif
-    thumbCards[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    inactiveImgEl.onload = () => {
+      inactiveImgEl.onload = null;
+      inactiveImgEl.classList.add('active-img');
+      activeImgEl.classList.remove('active-img');
+
+      // Swap references
+      const temp = activeImgEl;
+      activeImgEl = inactiveImgEl;
+      inactiveImgEl = temp;
+    };
+
+    inactiveImgEl.src = galleryPhotos[index];
   }
 
   btnPhotoNext.addEventListener('click', () => {
+    handleUserInteraction();
     showPhoto((activePhotoIndex + 1) % galleryPhotos.length);
   });
 
   btnPhotoPrev.addEventListener('click', () => {
+    handleUserInteraction();
     showPhoto((activePhotoIndex - 1 + galleryPhotos.length) % galleryPhotos.length);
   });
 

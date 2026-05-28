@@ -545,7 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
     card.innerHTML = `<img src="${thumbSrc}" alt="Memori ${idx + 1}" loading="lazy">`;
     card.addEventListener('click', () => {
       handleUserInteraction();
-      showPhoto(idx);
+      showPhoto(idx, false);
     });
     thumbnailsRow.appendChild(card);
   });
@@ -565,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isSlideshowPausedByInteraction) return; // Paused due to recent interaction
     slideshowInterval = setInterval(() => {
       const nextIndex = (activePhotoIndex + 1) % galleryPhotos.length;
-      showPhoto(nextIndex);
+      showPhoto(nextIndex, true); // isAuto = true
     }, 5000);
   }
 
@@ -597,22 +597,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 15000); // 15 seconds
   }
 
-  function showPhoto(index) {
+  function showPhoto(index, isAuto = false) {
     if (!activeImgEl || !inactiveImgEl) return;
     activePhotoIndex = index;
     const thumbCards = thumbnailsRow.querySelectorAll('.photo-thumb-card');
     thumbCards.forEach(c => c.classList.remove('active-thumb'));
     if (thumbCards[index]) {
       thumbCards[index].classList.add('active-thumb');
-      // Scroll horizontal container thumbnail saja tanpa menarik scrollbar utama halaman
-      const card = thumbCards[index];
-      const containerWidth = thumbnailsRow.clientWidth;
-      const cardLeft = card.offsetLeft - thumbnailsRow.offsetLeft;
-      const cardWidth = card.clientWidth;
-      thumbnailsRow.scrollTo({
-        left: cardLeft - (containerWidth / 2) + (cardWidth / 2),
-        behavior: 'smooth'
-      });
+      
+      // Scroll horizontal container thumbnail HANYA jika dipicu secara manual oleh user
+      if (!isAuto) {
+        const card = thumbCards[index];
+        const containerWidth = thumbnailsRow.clientWidth;
+        const cardLeft = card.offsetLeft - thumbnailsRow.offsetLeft;
+        const cardWidth = card.clientWidth;
+        thumbnailsRow.scrollTo({
+          left: cardLeft - (containerWidth / 2) + (cardWidth / 2),
+          behavior: 'smooth'
+        });
+      }
     }
 
     // Double Image Crossfade
@@ -635,12 +638,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnPhotoNext.addEventListener('click', () => {
     handleUserInteraction();
-    showPhoto((activePhotoIndex + 1) % galleryPhotos.length);
+    showPhoto((activePhotoIndex + 1) % galleryPhotos.length, false);
   });
 
   btnPhotoPrev.addEventListener('click', () => {
     handleUserInteraction();
-    showPhoto((activePhotoIndex - 1 + galleryPhotos.length) % galleryPhotos.length);
+    showPhoto((activePhotoIndex - 1 + galleryPhotos.length) % galleryPhotos.length, false);
   });
 
 

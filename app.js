@@ -735,24 +735,35 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="polaroid-caption">${config.caption}</div>
       `;
 
-      // Event klik untuk animasi getar dan partikel
+      // Event klik & dobel-klik (untuk desktop & mobile)
+      let lastClickTime = 0;
       frame.addEventListener('click', (e) => {
-        frame.classList.add('wiggle');
-        setTimeout(() => frame.classList.remove('wiggle'), 500);
+        const currentTime = new Date().getTime();
+        const clickDelay = currentTime - lastClickTime;
+        lastClickTime = currentTime;
 
-        const particles = ['❤️', '✨', '🌸', '⭐', '🎈'];
-        for (let i = 0; i < 3; i++) {
-          const particle = document.createElement('div');
-          particle.className = 'polaroid-particle';
-          particle.textContent = particles[Math.floor(Math.random() * particles.length)];
-          const pageX = e.pageX + (Math.random() * 30 - 15);
-          const pageY = e.pageY + (Math.random() * 30 - 15);
-          particle.style.left = `${pageX}px`;
-          particle.style.top = `${pageY}px`;
-          particle.style.setProperty('--drift-x', `${Math.random() * 50 - 25}px`);
-          particle.style.setProperty('--rot', `${Math.random() * 80 - 40}deg`);
-          document.body.appendChild(particle);
-          setTimeout(() => particle.remove(), 1200);
+        if (clickDelay < 350) {
+          // Dobel klik terdeteksi! Aktifkan polaroid
+          triggerPolaroidActivation(frame);
+        } else {
+          // Efek getar dan partikel klik biasa
+          frame.classList.add('wiggle');
+          setTimeout(() => frame.classList.remove('wiggle'), 500);
+
+          const particlesList = ['❤️', '✨', '🌸', '⭐', '🎈'];
+          for (let i = 0; i < 3; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'polaroid-particle';
+            particle.textContent = particlesList[Math.floor(Math.random() * particlesList.length)];
+            const pageX = e.pageX + (Math.random() * 30 - 15);
+            const pageY = e.pageY + (Math.random() * 30 - 15);
+            particle.style.left = `${pageX}px`;
+            particle.style.top = `${pageY}px`;
+            particle.style.setProperty('--drift-x', `${Math.random() * 50 - 25}px`);
+            particle.style.setProperty('--rot', `${Math.random() * 80 - 40}deg`);
+            document.body.appendChild(particle);
+            setTimeout(() => particle.remove(), 1200);
+          }
         }
       });
 
@@ -760,8 +771,380 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  initPolaroids();
+  // === POLAROID ACTIVATION & SHORTCUTS ===
+  const activatedPolaroids = new Set();
 
+  function triggerPolaroidActivation(frame) {
+    if (activatedPolaroids.has(frame)) return; // Sudah aktif
+
+    activatedPolaroids.add(frame);
+    frame.classList.add('activated');
+
+    // Tambah stempel hati kecil di pojok polaroid
+    const heart = document.createElement('div');
+    heart.className = 'polaroid-heart-stamp';
+    heart.textContent = '❤️';
+    frame.appendChild(heart);
+
+    // Percikan aktivasi
+    const rect = frame.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    spawnActivationSparks(x, y);
+
+    // Cek jika seluruh 16 polaroid sudah aktif
+    if (activatedPolaroids.size === polaroidConfigs.length) {
+      triggerSecretFireworks();
+    }
+  }
+
+  function spawnActivationSparks(x, y) {
+    const particlesList = ['❤️', '✨', '🌸', '⭐', '🎈'];
+    for (let i = 0; i < 8; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'polaroid-particle';
+      particle.textContent = particlesList[Math.floor(Math.random() * particlesList.length)];
+      particle.style.position = 'fixed';
+      particle.style.left = `${x}px`;
+      particle.style.top = `${y}px`;
+      particle.style.setProperty('--drift-x', `${Math.random() * 80 - 40}px`);
+      particle.style.setProperty('--rot', `${Math.random() * 120 - 60}deg`);
+      document.body.appendChild(particle);
+      setTimeout(() => particle.remove(), 1200);
+    }
+  }
+
+  // Shortcut Dobel Klik Judul MEMORISTIN (Mobile Fallback)
+  const heroTitle = document.querySelector('.hero-title');
+  if (heroTitle) {
+    let titleClickCount = 0;
+    let titleLastClick = 0;
+    heroTitle.addEventListener('click', () => {
+      const now = Date.now();
+      if (now - titleLastClick < 400) {
+        titleClickCount++;
+        if (titleClickCount >= 1) { // 2 ketukan cepat
+          triggerSecretFireworks();
+          titleClickCount = 0;
+        }
+      } else {
+        titleClickCount = 0;
+      }
+      titleLastClick = now;
+    });
+  }
+
+  // === FIREWORKS ENGINE ===
+  let fireworksActive = false;
+  let fireworksAnimationId = null;
+  let launchInterval = null;
+  let canvas = null;
+  let ctx = null;
+  let particles = [];
+  let rockets = [];
+  let currentWordIndex = 0;
+
+  const fireworksWords = [
+    "YOU ARE MY EVERYTHING",
+    "KAMU HEBAT, RISTIN!",
+    "사랑해",
+    "SEMANGAT TERUS YA!",
+    "TETAPLAH DI SINI",
+    "TERIMA KASIH CERITANYA"
+  ];
+
+  class Rocket {
+    constructor(startX, startY, targetX, targetY, word) {
+      this.x = startX;
+      this.y = startY;
+      this.targetX = targetX;
+      this.targetY = targetY;
+      this.word = word;
+      this.speed = 12;
+      const angle = Math.atan2(targetY - startY, targetX - startX);
+      this.vx = Math.cos(angle) * this.speed;
+      this.vy = Math.sin(angle) * this.speed;
+      this.alive = true;
+      this.trail = [];
+    }
+
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      
+      this.trail.push({ x: this.x, y: this.y });
+      if (this.trail.length > 8) this.trail.shift();
+
+      const dist = Math.hypot(this.targetX - this.x, this.targetY - this.y);
+      if (dist < 15 || this.y <= this.targetY) {
+        this.alive = false;
+        explodeRocket(this.targetX, this.targetY, this.word);
+      }
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(255, 126, 95, 0.8)';
+      ctx.lineWidth = 3;
+      for (let i = 0; i < this.trail.length; i++) {
+        const p = this.trail[i];
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.stroke();
+    }
+  }
+
+  class Particle {
+    constructor(x, y, targetX, targetY, color) {
+      this.x = x;
+      this.y = y;
+      this.vx = (targetX - x) / 35 + (Math.random() * 2 - 1) * 0.4;
+      this.vy = (targetY - y) / 35 + (Math.random() * 2 - 1) * 0.4;
+      this.targetX = targetX;
+      this.targetY = targetY;
+      this.color = color;
+      this.alpha = 1;
+      this.decay = Math.random() * 0.012 + 0.008;
+      this.friction = 0.96;
+      this.gravity = 0.04;
+      this.lifeStage = 'assemble'; // 'assemble', 'hold', 'fade'
+      this.timer = 0;
+      this.holdTime = 70 + Math.random() * 30; // menahan bentuk tulisan
+    }
+
+    update() {
+      if (this.lifeStage === 'assemble') {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.timer++;
+        const dist = Math.hypot(this.targetX - this.x, this.targetY - this.y);
+        if (dist < 2 || this.timer > 35) {
+          this.x = this.targetX;
+          this.y = this.targetY;
+          this.vx = 0;
+          this.vy = 0;
+          this.lifeStage = 'hold';
+          this.timer = 0;
+        }
+      } else if (this.lifeStage === 'hold') {
+        this.timer++;
+        if (this.timer > this.holdTime) {
+          this.lifeStage = 'fade';
+          const angle = Math.random() * Math.PI * 2;
+          const force = Math.random() * 1.5;
+          this.vx = Math.cos(angle) * force;
+          this.vy = Math.sin(angle) * force;
+        }
+      } else if (this.lifeStage === 'fade') {
+        this.vx *= this.friction;
+        this.vy *= this.friction;
+        this.vy += this.gravity;
+        this.x += this.vx;
+        this.y += this.vy;
+        this.alpha -= this.decay;
+      }
+    }
+
+    draw() {
+      ctx.save();
+      ctx.globalAlpha = this.alpha;
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  function explodeRocket(ex, ey, word) {
+    const offscreenCanvas = document.createElement('canvas');
+    const offscreenCtx = offscreenCanvas.getContext('2d');
+    
+    offscreenCanvas.width = 650;
+    offscreenCanvas.height = 120;
+    
+    offscreenCtx.fillStyle = '#ffffff';
+    offscreenCtx.font = 'bold 36px Outfit, Montserrat, sans-serif';
+    offscreenCtx.textAlign = 'center';
+    offscreenCtx.textBaseline = 'middle';
+    offscreenCtx.clearRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+    offscreenCtx.fillText(word, offscreenCanvas.width / 2, offscreenCanvas.height / 2);
+    
+    const imgData = offscreenCtx.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+    const pixels = imgData.data;
+    const points = [];
+    
+    const step = 3;
+    for (let y = 0; y < offscreenCanvas.height; y += step) {
+      for (let x = 0; x < offscreenCanvas.width; x += step) {
+        const index = (y * offscreenCanvas.width + x) * 4;
+        const alpha = pixels[index + 3];
+        if (alpha > 128) {
+          points.push({
+            x: x - offscreenCanvas.width / 2,
+            y: y - offscreenCanvas.height / 2
+          });
+        }
+      }
+    }
+    
+    const colors = [
+      '#ff5e36', // Neon orange
+      '#00d2ff', // Cyan
+      '#ffa834', // Gold
+      '#ffff80', // Yellow
+      '#ff3366', // Pink
+      '#ffffff'  // White
+    ];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    
+    let scale = window.innerWidth < 768 ? 0.55 : 1.0;
+    
+    points.forEach(p => {
+      const targetX = ex + p.x * scale;
+      const targetY = ey + p.y * scale;
+      const startX = ex + (Math.random() * 20 - 10);
+      const startY = ey + (Math.random() * 20 - 10);
+      particles.push(new Particle(startX, startY, targetX, targetY, color));
+    });
+
+    // Percikan acak background
+    for (let i = 0; i < 40; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const velocity = Math.random() * 5 + 1.5;
+      const p = new Particle(ex, ey, ex + Math.cos(angle) * velocity * 25, ey + Math.sin(angle) * velocity * 25, color);
+      p.lifeStage = 'fade';
+      particles.push(p);
+    }
+  }
+
+  function loopFireworks() {
+    if (!fireworksActive) return;
+    
+    ctx.fillStyle = 'rgba(10, 10, 10, 0.2)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    for (let i = rockets.length - 1; i >= 0; i--) {
+      const r = rockets[i];
+      r.update();
+      if (r.alive) r.draw();
+      else rockets.splice(i, 1);
+    }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.update();
+      p.draw();
+      if (p.alpha <= 0) particles.splice(i, 1);
+    }
+    
+    fireworksAnimationId = requestAnimationFrame(loopFireworks);
+  }
+
+  function startLaunchingRockets() {
+    currentWordIndex = 0;
+    
+    const launch = () => {
+      if (!fireworksActive) return;
+      const word = fireworksWords[currentWordIndex];
+      currentWordIndex = (currentWordIndex + 1) % fireworksWords.length;
+      
+      const startX = canvas.width / 2 + (Math.random() * 120 - 60);
+      const startY = canvas.height + 20;
+      const targetX = canvas.width / 2;
+      const targetY = canvas.height * 0.4 + (Math.random() * 80 - 40);
+      
+      rockets.push(new Rocket(startX, startY, targetX, targetY, word));
+    };
+
+    launch();
+    launchInterval = setInterval(launch, 3300);
+  }
+
+  function triggerSecretFireworks() {
+    if (fireworksActive) return;
+    
+    fireworksActive = true;
+    
+    canvas = document.getElementById('fireworks-canvas');
+    ctx = canvas.getContext('2d');
+    const overlay = document.getElementById('fireworks-overlay');
+    
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.style.display = 'block';
+    
+    overlay.classList.add('active');
+    
+    window.addEventListener('resize', resizeFireworksCanvas);
+    
+    // Matikan musik utama, mainkan lagu melayang
+    if (isPlaying) {
+      pauseMusic();
+    }
+    playFloatingMusic();
+    
+    rockets = [];
+    particles = [];
+    loopFireworks();
+    startLaunchingRockets();
+    
+    // Berhenti otomatis setelah 20 detik
+    setTimeout(() => {
+      stopSecretFireworks();
+    }, 20000);
+  }
+
+  function resizeFireworksCanvas() {
+    if (canvas) {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+  }
+
+  function stopSecretFireworks() {
+    if (!fireworksActive) return;
+    
+    fireworksActive = false;
+    
+    if (fireworksAnimationId) {
+      cancelAnimationFrame(fireworksAnimationId);
+      fireworksAnimationId = null;
+    }
+    if (launchInterval) {
+      clearInterval(launchInterval);
+      launchInterval = null;
+    }
+    
+    window.removeEventListener('resize', resizeFireworksCanvas);
+    
+    const overlay = document.getElementById('fireworks-overlay');
+    if (overlay) overlay.classList.remove('active');
+    
+    if (canvas) {
+      canvas.style.opacity = '0';
+      canvas.style.transition = 'opacity 1s ease-in-out';
+      setTimeout(() => {
+        canvas.style.display = 'none';
+        canvas.style.opacity = '1';
+        canvas.style.transition = '';
+      }, 1000);
+    }
+    
+    // Matikan musik melayang
+    pauseFloatingMusic();
+    
+    // Reset polaroid teraktivasi
+    activatedPolaroids.forEach(frame => {
+      frame.classList.remove('activated');
+      const stamp = frame.querySelector('.polaroid-heart-stamp');
+      if (stamp) stamp.remove();
+    });
+    activatedPolaroids.clear();
+  }
+
+  initPolaroids();
 
   // === 5. START BUTTON SMOOTH SCROLL & AUTO PLAY ===
   const btnStart = document.getElementById('btn-start');

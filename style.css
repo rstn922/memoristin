@@ -1024,3 +1024,57 @@ body {
     font-size: 0.7rem;
   }
 }
+
+/* === SECRET FIREWORKS OVERLAY & CANVAS === */
+.fireworks-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(10, 10, 10, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1s ease-in-out;
+}
+
+.fireworks-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#fireworks-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+  pointer-events: none;
+  display: none;
+}
+
+/* Glow & Rotate Effect for Activated Polaroids */
+.polaroid-frame.activated {
+  box-shadow: 0 0 25px rgba(255, 94, 54, 0.85) !important;
+  border-color: rgba(255, 94, 54, 0.9) !important;
+  transform: scale(1.08) rotate(0deg) !important;
+  z-index: 10;
+}
+
+.polaroid-heart-stamp {
+  position: absolute;
+  bottom: 4px;
+  right: 8px;
+  font-size: 16px;
+  color: #ff3366;
+  animation: popHeart 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popHeart {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
+}
